@@ -1,0 +1,1 @@
+An example that shows how to make use of Room to add offline support in an app. 
