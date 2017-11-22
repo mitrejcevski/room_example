@@ -9,12 +9,12 @@ import javax.inject.Inject
 internal class ProfileViewModel @Inject constructor(private val dataSource: ProfileDataSource) : ViewModel() {
 
     private val inputLiveData = MutableLiveData<String>()
-    private lateinit var profile: LiveData<ProfileResponse>
+    private lateinit var profileResult: LiveData<ProfileResponse>
 
     fun fetchProfile(profileId: String) {
         inputLiveData.value = profileId
-        profile = Transformations.switchMap(inputLiveData, dataSource::fetchProfile)
+        profileResult = Transformations.switchMap(inputLiveData, dataSource::fetchProfile)
     }
 
-    fun profile(): LiveData<ProfileResponse> = profile
+    fun profile(): LiveData<ProfileResponse> = profileResult
 }

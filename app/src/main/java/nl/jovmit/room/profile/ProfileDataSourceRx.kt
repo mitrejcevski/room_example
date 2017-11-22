@@ -4,8 +4,7 @@ import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import io.reactivex.schedulers.Schedulers
 
-internal class ProfileDataSourceRx constructor(private val profileApi: ProfileApi) :
-        ProfileDataSource {
+internal class ProfileDataSourceRx(private val profileApi: ProfileApi) : ProfileDataSource {
 
     private val result = MutableLiveData<ProfileResponse>()
 
