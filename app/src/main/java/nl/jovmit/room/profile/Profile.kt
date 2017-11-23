@@ -1,6 +1,10 @@
 package nl.jovmit.room.profile
 
-internal data class Profile(val profileId: String = "",
-                            val username: String = "",
-                            val fullName: String = "",
-                            val age: Int = 0)
+import android.arch.persistence.room.Entity
+import android.arch.persistence.room.PrimaryKey
+
+@Entity
+data class Profile(@PrimaryKey var profileId: String = "",
+                   var username: String = "",
+                   var fullName: String = "",
+                   var age: Int = 0)

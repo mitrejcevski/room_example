@@ -1,26 +1,30 @@
 package nl.jovmit.room.profile
 
 import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.MutableLiveData
+import android.arch.lifecycle.Transformations
+import android.util.Log
 import io.reactivex.schedulers.Schedulers
+import nl.jovmit.room.app.AppDatabase
 
-internal class ProfileDataSourceRx(private val profileApi: ProfileApi) : ProfileDataSource {
-
-    private val result = MutableLiveData<ProfileResponse>()
+internal class ProfileDataSourceRx(private val profileApi: ProfileApi,
+                                   private val database: AppDatabase) : ProfileDataSource {
 
     override fun fetchProfile(profileId: String): LiveData<ProfileResponse> {
         profileApi.getObservableUser(profileId)
                 .observeOn(Schedulers.io())
                 .subscribeOn(Schedulers.io())
                 .subscribe(this::next, this::error) //these are called from background thread
-        return result
+        val source = database.profileDao().findById(profileId)
+        return Transformations.map(source) {
+            ProfileResponse.Success(it ?: Profile())
+        }
     }
 
     private fun next(profile: Profile) {
-        result.postValue(ProfileResponse.Success(profile))
+        database.profileDao().insert(profile)
     }
 
     private fun error(error: Throwable) {
-        result.postValue(ProfileResponse.Error(error.message ?: "network_error"))
+        Log.e("ProfileDataSource", "Error fetching profile", error)
     }
 }

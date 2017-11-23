@@ -1,35 +1,35 @@
 package nl.jovmit.room.profile
 
 import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.MutableLiveData
-import kotlinx.coroutines.experimental.Deferred
+import android.arch.lifecycle.Transformations
+import android.util.Log
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.launch
+import nl.jovmit.room.app.AppDatabase
 import java.io.IOException
 
-internal class ProfileDataSourceCr(private val profileApi: ProfileApi) : ProfileDataSource {
-
-    private val liveData = MutableLiveData<ProfileResponse>()
+internal class ProfileDataSourceCr(private val profileApi: ProfileApi,
+                                   private val database: AppDatabase) : ProfileDataSource {
 
     override fun fetchProfile(profileId: String): LiveData<ProfileResponse> {
         launch {
-            val response = fetchUserFromRepo(profileId).await()
-            liveData.postValue(response)
+            fetchUserFromRepo(profileId)
         }
-        return liveData
+        val source = database.profileDao().findById(profileId)
+        return Transformations.map(source) {
+            ProfileResponse.Success(it ?: Profile())
+        }
     }
 
-    private suspend fun fetchUserFromRepo(userId: String): Deferred<ProfileResponse> {
-        return async {
+    private suspend fun fetchUserFromRepo(userId: String) {
+        async {
             try {
                 val result = profileApi.getUser(userId).execute()
-                if (result.isSuccessful) {
-                    ProfileResponse.Success(result.body() ?: Profile())
-                } else {
-                    ProfileResponse.Error(result.message())
+                result.body()?.let {
+                    database.profileDao().insert(it)
                 }
             } catch (exception: IOException) {
-                ProfileResponse.Error(exception.message ?: "network_error")
+                Log.e("ProfileDataSource", "Error fetching profile", exception)
             }
         }
     }

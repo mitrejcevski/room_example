@@ -1,5 +1,6 @@
 package nl.jovmit.room.app
 
+import android.arch.persistence.room.Room
 import android.content.Context
 import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import dagger.Module
@@ -25,4 +26,9 @@ internal class AppModule {
                 .addConverterFactory(MoshiConverterFactory.create())
                 .build()
     }
+
+    @Provides
+    @Singleton
+    fun provideDatabase(context: Context): AppDatabase =
+            Room.databaseBuilder(context, AppDatabase::class.java, "room.db").build()
 }
